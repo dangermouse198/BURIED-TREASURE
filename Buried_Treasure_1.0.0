@@ -36,16 +36,18 @@ def find_sentences_with_contact_details(text):
     return emails
 
 
-def find_proper_nouns(sentence):
+def find_proper_nouns_and_verbs(sentence):
     proper_nouns = []
-    wanted_tags = ['NNP']
+    verbs = []
 
     words = nltk.word_tokenize(sentence)
     tagged = nltk.pos_tag(words)
     for word, tag in tagged:
-        if tag in wanted_tags:
+        if tag == 'NNP':
             proper_nouns.append(word)
-    return proper_nouns
+        if 'VB' in tag:
+            verbs.append(word)
+    return proper_nouns, verbs
 
 
 def find_named_entities(text):
@@ -69,6 +71,6 @@ emails_and_sentences = find_sentences_with_contact_details(text_1)
 named_entities = find_named_entities(text_1)
 
 for email, sentence in emails_and_sentences:
-    nouns = find_proper_nouns(sentence)
+    nouns, verbs = find_proper_nouns_and_verbs(sentence)
     nouns = [n for n in nouns if n in named_entities]  # Filter nouns by those that are found by NRE
-    print(email, nouns, sentence)
+    print(email, nouns, verbs, sentence)
