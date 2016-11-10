@@ -22,7 +22,7 @@ st = StanfordNERTagger('./Desktop/Stanford/stanford-ner-2015-12-09/classifiers/e
                        encoding='utf-8')
 
 EMAIL_REGEX = r'[\w\.-]+@[\w\.-]+'
-PHONE_REGEX = r'[0-9\-\+\(\)]{9,15}'
+PHONE_REGEX = r'[0-9\-\+\(\)]{6,15}'
 
 
 def find_sentences_with_contact_details(text):
