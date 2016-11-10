@@ -1,0 +1,77 @@
+# BURIED TREASURE:  Using Natural Language Processing to mine text
+
+# import libraries
+import nltk # import nltk
+import re # import regular expression operation
+import math # import maths operation
+import unidecode # import unicode and unidecode operations
+import os # list all files in the current directory
+import glob # list only some files, depending on the file pattern
+import warnings
+import tempfile
+import json
+
+# if required, use nltk.download() to install packages from NLTK
+# import specific functions from libraries
+
+from nltk.tokenize import sent_tokenize, PunktSentenceTokenizer
+from nltk.corpus import stopwords
+from collections import defaultdict # works exactly like a normal dict, but it is initialized with a function (“default factory”) that takes no arguments and provides the default value for a nonexistent key
+from unidecode import unidecode
+from nltk import word_tokenize
+from nltk.util import ngrams
+from nltk.collocations import *
+from nltk.stem import PorterStemmer # stemming is a sort of normalizing method
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
+from nltk.chunk import *
+from nltk.chunk.util import *
+from nltk.chunk.regexp import *
+from nltk import pos_tag
+from subprocess import PIPE
+from nltk.internals import find_file, find_jar, config_java, java, _java_options, find_jars_within_path
+from nltk.tag.api import TaggerI
+from nltk import compat
+from nltk.tag.stanford import StanfordNERTagger, StanfordPOSTagger
+from nltk.tokenize.api import TokenizerI
+from nltk import compat
+from __future__ import unicode_literals, print_function
+
+# from pycorenlp import StanfordCoreNLP
+# nlp = StanfordCoreNLP('http://localhost:9000')
+
+_stanford_url = 'http://nlp.stanford.edu/software/*'
+# _stanford_url = 'http://nlp.stanford.edu/software/tokenizer.shtml'
+
+# opening files
+text_1 = ''
+
+for filename in glob.glob('./Desktop/Texts/*'):
+#     print(filename)
+    with open(filename) as file:
+        text_1 += file.read()
+print(text_1)
+# tokenize the text
+starting_tokenizer = PunktSentenceTokenizer(text_1)
+
+tokenized = starting_tokenizer.tokenize(text_1)
+print(len(tokenized))
+
+def tokenize():
+    emails = []
+    try:
+        for i in tokenized:
+            match = re.findall(r'[\w\.-]+@[\w\.-]+',i)
+            if match:
+                emails.append(i)
+            else:
+                numatch = re.findall(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})',i)
+                if numatch:
+                    emails.append(i)
+                    
+    except Exception as e:
+        print(str(e))
+    return emails
+        
+emails = tokenize()
+print(emails)
