@@ -1,118 +1,74 @@
 # BURIED TREASURE:  Using Natural Language Processing to mine text
 
-# import libraries
-import nltk # import nltk
-import re # import regular expression operation
-import math # import maths operation
-import unidecode # import unicode and unidecode operations
-import os # list all files in the current directory
-import glob # list only some files, depending on the file pattern
-import warnings
-import tempfile
-import json
-
-# if required, use nltk.download() to install packages from NLTK
-# import specific functions from libraries
-
-from nltk.tokenize import sent_tokenize, PunktSentenceTokenizer
-from nltk.corpus import stopwords
-from collections import defaultdict # works exactly like a normal dict, but it is initialized with a function (“default factory”) that takes no arguments and provides the default value for a nonexistent key
-from unidecode import unidecode
-from nltk import word_tokenize
-from nltk.util import ngrams
-from nltk.collocations import *
-from nltk.stem import PorterStemmer # stemming is a sort of normalizing method
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import wordnet
-from nltk.chunk import *
-from nltk.chunk.util import *
-from nltk.chunk.regexp import *
-from nltk import pos_tag
-from subprocess import PIPE
-from nltk.internals import find_file, find_jar, config_java, java, _java_options, find_jars_within_path
-from nltk.tag.api import TaggerI
-from nltk import compat
-from nltk.tag.stanford import StanfordNERTagger, StanfordPOSTagger
-from nltk.tokenize.api import TokenizerI
-from nltk import compat
 from __future__ import unicode_literals, print_function
 
-# from pycorenlp import StanfordCoreNLP
-# nlp = StanfordCoreNLP('http://localhost:9000')
+import glob  # list only some files, depending on the file pattern
+import re  # import regular expression operation
+
+import nltk
+from nltk import word_tokenize
+from nltk.chunk import *
+from nltk.chunk.regexp import *
+from nltk.chunk.util import *
+from nltk.collocations import *
+from nltk.tag.stanford import StanfordNERTagger
+from nltk.tokenize import PunktSentenceTokenizer
 
 _stanford_url = 'http://nlp.stanford.edu/software/*'
 # _stanford_url = 'http://nlp.stanford.edu/software/tokenizer.shtml'
-
-# opening files
-text_1 = ''
-
-for filename in glob.glob('./Desktop/Texts/*'):
-#     print(filename)
-    with open(filename) as file:
-        text_1 += file.read()
-print(text_1)
-
-# tokenize the text
-starting_tokenizer = PunktSentenceTokenizer(text_1)
-
-tokenized = starting_tokenizer.tokenize(text_1)
-print(len(tokenized))
-
-def tokenize():
-    emails = []
-    withNNP = []
-    wanted_tags = ['NNP']
-    for i in tokenized:
-
-        match = re.findall(r'[\w\.-]+@[\w\.-]+',i)
-        if match:
-            emails.append(i)
-        else:
-            numatch = re.findall(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})',i)
-            if numatch:
-                emails.append(i)
-    for e in emails:
-        words = nltk.word_tokenize(e)
-        tagged = nltk.pos_tag(words)
-        for word, tag in tagged:
-            if tag in wanted_tags:
-                withNNP.append((e, word, tag))
-                break
-    return withNNP
-        
-withNNP = tokenize()
-print(withNNP)
 
 st = StanfordNERTagger('./Desktop/Stanford/stanford-ner-2015-12-09/classifiers/english.muc.7class.distsim.crf.ser.gz',
                        './Desktop/Stanford/stanford-ner-2015-12-09/stanford-ner.jar',
                        encoding='utf-8')
 
-def NERtagger():
-    withNER = set()
+EMAIL_REGEX = r'[\w\.-]+@[\w\.-]+'
+PHONE_REGEX = r'\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4}'
+
+
+def find_sentences_with_contact_details(text):
+    emails = []
+    starting_tokenizer = PunktSentenceTokenizer(text)
+    tokenized_text = starting_tokenizer.tokenize(text)
+    for sentence in tokenized_text:
+        match = re.findall(EMAIL_REGEX + r'|' + PHONE_REGEX, sentence)
+        if match:
+            emails.append((match[0], sentence))
+    return emails
+
+
+def find_proper_nouns(sentence):
+    proper_nouns = []
+    wanted_tags = ['NNP']
+
+    words = nltk.word_tokenize(sentence)
+    tagged = nltk.pos_tag(words)
+    for word, tag in tagged:
+        if tag in wanted_tags:
+            proper_nouns.append(word)
+    return proper_nouns
+
+
+def find_named_entities(text):
+    named_entities = set()
     wanted_tags = ['PERSON', 'LOCATION', 'ORGANISATION']
-    tokenized_text = word_tokenize(text_1)
+    tokenized_text = word_tokenize(text)
     classified_text = st.tag(tokenized_text)
     for word, tag in classified_text:
         if tag in wanted_tags:
-            withNER.add((word, tag))
-    return withNER
-            
-withNER = NERtagger()
-print(withNER)
+            named_entities.add(word)
+    return named_entities
 
-def combinem():
-    treasure = []
-    foolsgold = []
-    for sentence, word, tag in withNNP:
-        flag=0
-        for name, tag2 in withNER:
-            if word == name:
-                treasure.append(sentence)
-                flag=1
-                break
-        if flag == 0:
-            foolsgold.append(sentence)
-    return treasure, foolsgold
 
-treasure = combinem()
-print(treasure)
+# Read all the texts from given folder
+text_1 = ''
+for filename in glob.glob('./Desktop/Texts/*'):
+    with open(filename) as file:
+        text_1 += file.read()
+
+emails_and_sentences = find_sentences_with_contact_details(text_1)
+named_entities = find_named_entities(text_1)
+
+for email, sentence in emails_and_sentences:
+    nouns = find_proper_nouns(sentence)
+    nouns = [n for n in nouns if n in named_entities]  # Filter nouns by those that are found by NRE
+    print(email, nouns, sentence)
