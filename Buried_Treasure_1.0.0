@@ -70,7 +70,10 @@ for filename in glob.glob('./Desktop/Texts/*'):
 emails_and_sentences = find_sentences_with_contact_details(text_1)
 named_entities = find_named_entities(text_1)
 
-for email, sentence in emails_and_sentences:
-    nouns, verbs = find_proper_nouns_and_verbs(sentence)
-    nouns = [n for n in nouns if n in named_entities]  # Filter nouns by those that are found by NRE
-    print(email, nouns, verbs, sentence)
+with open('./Desktop/foolsgold.csv', 'w') as output_file:
+    output_file.write('Contact,Nouns,Verbs,Sentence\n')
+    for email, sentence in emails_and_sentences:
+        nouns, verbs = find_proper_nouns_and_verbs(sentence)
+        nouns = [n for n in nouns if n in named_entities]  # Filter nouns by those that are found by NRE
+        print(email, verbs, nouns, sentence)
+        output_file.write(','.join([email, ' '.join(verbs), ' '.join(nouns), sentence.replace(',', ''), '\n']))
