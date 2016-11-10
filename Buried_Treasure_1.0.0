@@ -17,12 +17,12 @@ from nltk.tokenize import PunktSentenceTokenizer
 _stanford_url = 'http://nlp.stanford.edu/software/*'
 # _stanford_url = 'http://nlp.stanford.edu/software/tokenizer.shtml'
 
-st = StanfordNERTagger('./Desktop/Stanford/stanford-ner-2015-12-09/classifiers/english.muc.7class.distsim.crf.ser.gz',
+st = StanfordNERTagger('./Desktop/Stanford/stanford-ner-2015-12-09/classifiers/english.conll.4class.distsim.crf.ser.gz',
                        './Desktop/Stanford/stanford-ner-2015-12-09/stanford-ner.jar',
                        encoding='utf-8')
 
 EMAIL_REGEX = r'[\w\.-]+@[\w\.-]+'
-PHONE_REGEX = r'\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4}'
+PHONE_REGEX = r'[0-9\-\+\(\)]{9,15}'
 
 
 def find_sentences_with_contact_details(text):
