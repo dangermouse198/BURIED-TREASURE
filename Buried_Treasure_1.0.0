@@ -51,6 +51,7 @@ for filename in glob.glob('./Desktop/Texts/*'):
     with open(filename) as file:
         text_1 += file.read()
 print(text_1)
+
 # tokenize the text
 starting_tokenizer = PunktSentenceTokenizer(text_1)
 
@@ -59,19 +60,59 @@ print(len(tokenized))
 
 def tokenize():
     emails = []
-    try:
-        for i in tokenized:
-            match = re.findall(r'[\w\.-]+@[\w\.-]+',i)
-            if match:
+    withNNP = []
+    wanted_tags = ['NNP']
+    for i in tokenized:
+
+        match = re.findall(r'[\w\.-]+@[\w\.-]+',i)
+        if match:
+            emails.append(i)
+        else:
+            numatch = re.findall(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})',i)
+            if numatch:
                 emails.append(i)
-            else:
-                numatch = re.findall(r'(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})',i)
-                if numatch:
-                    emails.append(i)
-                    
-    except Exception as e:
-        print(str(e))
-    return emails
+    for e in emails:
+        words = nltk.word_tokenize(e)
+        tagged = nltk.pos_tag(words)
+        for word, tag in tagged:
+            if tag in wanted_tags:
+                withNNP.append((e, word, tag))
+                break
+    return withNNP
         
-emails = tokenize()
-print(emails)
+withNNP = tokenize()
+print(withNNP)
+
+st = StanfordNERTagger('./Desktop/Stanford/stanford-ner-2015-12-09/classifiers/english.muc.7class.distsim.crf.ser.gz',
+                       './Desktop/Stanford/stanford-ner-2015-12-09/stanford-ner.jar',
+                       encoding='utf-8')
+
+def NERtagger():
+    withNER = set()
+    wanted_tags = ['PERSON', 'LOCATION', 'ORGANISATION']
+    tokenized_text = word_tokenize(text_1)
+    classified_text = st.tag(tokenized_text)
+    for word, tag in classified_text:
+        if tag in wanted_tags:
+            withNER.add((word, tag))
+    return withNER
+            
+withNER = NERtagger()
+print(withNER)
+
+def combinem():
+    treasure = []
+    foolsgold = []
+    for sentence, word, tag in withNNP:
+        flag=0
+        for name, tag2 in withNER:
+            if word == name:
+                treasure.append(sentence)
+                flag=1
+                break
+        if flag == 0:
+            foolsgold.append(sentence)
+    return treasure, foolsgold
+
+treasure = combinem()
+print(treasure)
