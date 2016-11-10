@@ -23,7 +23,9 @@ st = StanfordNERTagger('./Desktop/Stanford/stanford-ner-2015-12-09/classifiers/e
 
 EMAIL_REGEX = r'[\w\.-]+@[\w\.-]+'
 PHONE_REGEX = r'[0-9\-\+\(\)]{6,15}'
-
+FACEBOOK_PAGE_ID_REGEX = r'https?://(www.)?facebook.com/(\w_#!/)?(pages/)?(([\w-]_/)*)?(?P<page_id>[\w.-]+)'
+FACEBOOK_USER_ID_REGEX = r'(?:http(|s):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-])*'
+TWITTER_MENTIONS_REGEX = r'(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9_]+)'
 
 def find_sentences_with_contact_details(text):
     emails = []
@@ -71,7 +73,7 @@ emails_and_sentences = find_sentences_with_contact_details(text_1)
 named_entities = find_named_entities(text_1)
 
 with open('./Desktop/foolsgold.csv', 'w') as output_file:
-    output_file.write('Contact,Nouns,Verbs,Sentence\n')
+    output_file.write('Contact,Verbs,Nouns,Sentence\n')
     for email, sentence in emails_and_sentences:
         nouns, verbs = find_proper_nouns_and_verbs(sentence)
         nouns = [n for n in nouns if n in named_entities]  # Filter nouns by those that are found by NRE
